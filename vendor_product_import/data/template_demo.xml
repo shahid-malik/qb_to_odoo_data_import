@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="res.partner" id="first_vendor">
+            <field name="name">Amazon</field>
+        </record>
+        <record id="mediod_vendor_template" model="mediod.vendor.template">
+            <field name="name">Amazon products import template</field>
+            <field name="vendor" ref="first_vendor"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_0" model="mediod.vendor.template.line">
+            <field name="odoo_field">default_code</field>
+            <field name="csv_field">ID</field>
+            <field name="vendor_template" ref="mediod_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_1" model="mediod.vendor.template.line">
+            <field name="odoo_field">name</field>
+            <field name="csv_field">Name</field>
+            <field name="vendor_template" ref="mediod_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_2" model="mediod.vendor.template.line">
+            <field name="odoo_field">name</field>
+            <field name="csv_field">PartFamilyName</field>
+            <field name="vendor_template" ref="mediod_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_3" model="mediod.vendor.template.line">
+            <field name="odoo_field">categ_id</field>
+            <field name="csv_field">CategoryName</field>
+            <field name="vendor_template" ref="mediod_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_4" model="mediod.vendor.template.line">
+            <field name="odoo_field">barcode</field>
+            <field name="csv_field">EachUpc</field>
+            <field name="vendor_template" ref="mediod_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_5" model="mediod.vendor.template.line">
+            <field name="odoo_field">list_price</field>
+            <field name="csv_field">EachMsrp</field>
+            <field name="vendor_template" ref="mediod_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_6" model="mediod.vendor.template.line">
+            <field name="odoo_field">standard_price</field>
+            <field name="csv_field">EachPrice</field>
+            <field name="vendor_template" ref="mediod_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_7" model="mediod.vendor.template.line">
+            <field name="odoo_field">volume</field>
+            <field name="csv_field">EachVolume</field>
+            <field name="vendor_template" ref="mediod_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_8" model="mediod.vendor.template.line">
+            <field name="odoo_field">weight</field>
+            <field name="csv_field">EachWeight</field>
+            <field name="vendor_template" ref="mediod_vendor_template"/>
+        </record>
+
+    </data>
+</odoo>

@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_mediod_vendor_template,name_mediod_vendor_template,model_mediod_vendor_template,,1,1,1,1
+access_vendor_template_line,name_mediod_vendor_template_line,model_mediod_vendor_template_line,,1,1,1,1
+access_mediod_product_template,name_mediod_product_template,model_mediod_product_template,,1,1,1,1
+access_mediod_csv_wizard,name_mediod_csv_wizard,model_mediod_csv_wizard,,1,1,1,1

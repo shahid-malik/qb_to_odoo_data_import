@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_inherit_form_view" model="ir.ui.view">
+        <field name="name">product.template.inherit.form</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='purchase']" position="after">
+                <page name="custom" string="Custom">
+                    <group>
+                        <group>
+                            <field name="asin"/>
+                            <field name="upc"/>
+                            <field name="product_family_id"/>
+                            <field name="product_brand_id"/>
+                            <field name="product_brand_name"/>
+                            <field name="product_category_id"/>
+                        </group>
+                        <group>
+                            <field name="image_metaname"/>
+                            <field name="product_image"/>
+                            <field name="website_description"/>
+                        </group>
+                    </group>
+                </page>
+                <page name="vendor_template" string="Vendor Template">
+                    <group>
+                        <group string="Whole Sale Pricing">
+                            <field name="ws_each"/>
+                            <field name="ws_case"/>
+                        </group>
+                        <group string="MSRP Pricing">
+                            <field name="msrp_each"/>
+                            <field name="msrp_case"/>
+                        </group>
+                        <group string="Dimensions">
+                            <field name="length"/>
+                            <field name="width"/>
+                            <field name="height"/>
+                        </group>
+                        <group string="Weight in Kilograms">
+                            <field name="ctn_weight"/>
+                            <field name="formulation_sg"/>
+                            <field name="rounded_kg"/>
+                            <field name="gross_weight"/>
+                        </group>
+                        <group string="Weight in Lbs">
+                            <field name="container_weight_lbs"/>
+                            <field name="rounded_lbs"/>
+                            <field name="gross_weight_lbs"/>
+                        </group>
+                        <group string="Content">
+                            <field name="liquid_metric"/>
+                            <field name="liquid_imp"/>
+                        </group>
+                        <group string="Net weight">
+                            <field name="weight_metric"/>
+                            <field name="weight_imp_lbs"/>
+                        </group>
+                        <group>
+                            <field name="case_size"/>
+                            <field name="product_size"/>
+                            <field name="notes"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

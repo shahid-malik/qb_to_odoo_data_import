@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <!--    Tree view for mediod vendor template form-->
+    <record id="vendor_template_tree_view" model="ir.ui.view">
+        <field name="name">mediod.vendor.template.form</field>
+        <field name="model">mediod.vendor.template</field>
+        <field name="arch" type="xml">
+            <tree string="Templates">
+                <field name="name"/>
+                <field name="vendor"/>
+                <field name="sample_file"/>
+            </tree>
+        </field>
+    </record>
+    <!--    Form view of Mediod vendor template-->
+    <record id="vendor_template_form_view" model="ir.ui.view">
+        <field name="name">mediod.vendor.template.form</field>
+        <field name="model">mediod.vendor.template</field>
+        <field name="priority">3</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="sample_file"/>
+                        </group>
+                        <group>
+                            <field name="vendor"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Product Fields">
+                            <field name="vendor_lines">
+                                <tree editable="top">
+                                    <field name="vendor_template" invisible="1"/>
+                                    <field name="odoo_field"/>
+                                    <field name="csv_field"/>
+                                    <!--<field name="have_duplicate"/>-->
+                                    <field name="is_unique"/>
+                                    <field name="have_duplicate"/>
+                                    <field name="has_unit"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="mediod_import_menu_action" model="ir.actions.act_window">
+        <field name="name">Vendor Template</field>
+        <field name="res_model">mediod.vendor.template</field>
+        <field name="view_mode">tree,form</field>
+    </record>
+
+    <menuitem name="Import" id="menu_action_template_import" parent="stock.menu_stock_root" sequence="10"/>
+    <menuitem name="Templates" action="mediod_import_menu_action" id="menu_template_menu_item"
+              parent="vendor_product_import.menu_action_template_import"/>
+    <menuitem name="Upload CSV" action="mediod_imports_via_wizard" id="menu_upload_csv_menu_items"
+              parent="vendor_product_import.menu_action_template_import"/>
+</odoo>

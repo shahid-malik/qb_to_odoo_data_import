@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record model="res.partner" id="vendor_name">
+            <field name="name">ALI Express</field>
+        </record>
+        <record id="mediod_demo_vendor_template" model="mediod.vendor.template">
+            <field name="name">ALI Express import template</field>
+            <field name="vendor" ref="vendor_name"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_0" model="mediod.vendor.template.line">
+            <field name="odoo_field">product_brand_name</field>
+            <field name="csv_field">Brand</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_01" model="mediod.vendor.template.line">
+            <field name="odoo_field">default_code</field>
+            <field name="csv_field">Item #</field>
+            <field name="is_unique">True</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_02" model="mediod.vendor.template.line">
+            <field name="odoo_field">name</field>
+            <field name="csv_field">Description</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_03" model="mediod.vendor.template.line">
+            <field name="odoo_field">case_size</field>
+            <field name="csv_field">Case Size</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_04" model="mediod.vendor.template.line">
+            <field name="odoo_field">barcode</field>
+            <field name="csv_field">Unit Barcode</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_05" model="mediod.vendor.template.line">
+            <field name="odoo_field">product_size</field>
+            <field name="csv_field">Product Size</field>
+            <field name="has_unit">True</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_06" model="mediod.vendor.template.line">
+            <field name="odoo_field">website_description</field>
+            <field name="csv_field">UOM</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_07" model="mediod.vendor.template.line">
+            <field name="odoo_field">ws_each</field>
+            <field name="csv_field">Each</field>
+            <field name="has_unit">True</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_08" model="mediod.vendor.template.line">
+            <field name="odoo_field">ws_case</field>
+            <field name="csv_field">Case</field>
+            <field name="has_unit">True</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_09" model="mediod.vendor.template.line">
+            <field name="odoo_field">msrp_each</field>
+            <field name="csv_field">Each</field>
+            <field name="has_unit">True</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_10" model="mediod.vendor.template.line">
+            <field name="odoo_field">msrp_case</field>
+            <field name="csv_field">Case</field>
+            <field name="has_unit">True</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_11" model="mediod.vendor.template.line">
+            <field name="odoo_field">length</field>
+            <field name="csv_field">Length</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_12" model="mediod.vendor.template.line">
+            <field name="odoo_field">width</field>
+            <field name="csv_field">Width</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_13" model="mediod.vendor.template.line">
+            <field name="odoo_field">height</field>
+            <field name="csv_field">Height</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_14" model="mediod.vendor.template.line">
+            <field name="odoo_field">ctn_weight</field>
+            <field name="csv_field">CTN Weight</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_15" model="mediod.vendor.template.line">
+            <field name="odoo_field">formulation_sg</field>
+            <field name="csv_field">Formulation with SG</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_16" model="mediod.vendor.template.line">
+            <field name="odoo_field">rounded_kg</field>
+            <field name="csv_field">Rounded Kg</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_17" model="mediod.vendor.template.line">
+            <field name="odoo_field">gross_weight</field>
+            <field name="csv_field">Gross Weight EA</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_18" model="mediod.vendor.template.line">
+            <field name="odoo_field">container_weight_lbs</field>
+            <field name="csv_field">Container Weight</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_19" model="mediod.vendor.template.line">
+            <field name="odoo_field">rounded_lbs</field>
+            <field name="csv_field">Rounded Lbs</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_20" model="mediod.vendor.template.line">
+            <field name="odoo_field">gross_weight</field>
+            <field name="csv_field">Gross Weight EA</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_21" model="mediod.vendor.template.line">
+            <field name="odoo_field">liquid_metric</field>
+            <field name="csv_field">Liquid Metric (L)</field>
+            <field name="has_unit">True</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_22" model="mediod.vendor.template.line">
+            <field name="odoo_field">liquid_imp</field>
+            <field name="csv_field">Liquid Imp (Gal)</field>
+            <field name="has_unit">True</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_23" model="mediod.vendor.template.line">
+            <field name="odoo_field">weight_metric</field>
+            <field name="csv_field">Weight Metric (kg)</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_24" model="mediod.vendor.template.line">
+            <field name="odoo_field">weight_imp_lbs</field>
+            <field name="csv_field">Weight Imp (Lbs)</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_25" model="mediod.vendor.template.line">
+            <field name="odoo_field">product_image</field>
+            <field name="csv_field">Single Product Image</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_29" model="mediod.vendor.template.line">
+            <field name="odoo_field">product_image_1</field>
+            <field name="csv_field">Single Product Image</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_26" model="mediod.vendor.template.line">
+            <field name="odoo_field">image_1920</field>
+            <field name="csv_field">Group Product Image</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_30" model="mediod.vendor.template.line">
+            <field name="odoo_field">sh_extra_image_url</field>
+            <field name="csv_field">Group Product Image</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_27" model="mediod.vendor.template.line">
+            <field name="odoo_field">image_metaname</field>
+            <field name="csv_field">Tribe Pak Product Image</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+        <record id="mediod_vendor_template_line_data_28" model="mediod.vendor.template.line">
+            <field name="odoo_field">description</field>
+            <field name="csv_field">Product Description</field>
+            <field name="vendor_template" ref="mediod_demo_vendor_template"/>
+        </record>
+
+    </data>
+</odoo>

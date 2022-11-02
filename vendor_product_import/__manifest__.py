@@ -1,0 +1,35 @@
+# -*- coding: utf-8 -*-
+{
+    'name': 'Vendor Product Import',
+    'version': '0.3',
+    'development_status': 'Development',
+    'category': '',
+    'summary': 'Tool for importing vendor product spreadsheets',
+    'license': 'Other proprietary',
+    'author': '',
+    'website': '',
+    'images': [
+        '',
+    ],
+    'application': True,
+    'installable': True,
+    'auto_install': False,
+    'depends': [
+        'base',
+        'mail',
+        'product',
+        'sale',
+        'stock',
+    ],
+    'data': [
+        'security/ir.model.access.csv',
+        'data/template_demo.xml',
+        'data/vendor_Products_template_demo.xml',
+        'data/north_America_advance_nutrients_product_details.xml',
+        'wizards/get_csv.xml',
+        'views/vendor_template.xml',
+        'views/product_template.xml',
+        'views/product_template_inherit.xml',
+        'views/quick_book_inherit.xml',
+    ],
+}
