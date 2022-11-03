@@ -127,20 +127,22 @@ class WizardGetFile(models.TransientModel):
                 "active": is_active,
                 "company_type": customer_type,
                 "phone": customer_phone,
-                "email": contact_email
+                "email": contact_email,
+                "customer_rank": 1
             }
         else:
             print("create contact")
             parent_customer = request.env['res.partner'].search([('name', '=', parent_customer)])
-            # partner_dict = {
-            #     "name": contact_name,
-            #     "title": salutation,
-            #     "parent_id": parent_customer,
-            #     "type": "contact",
-            #     "email": contact_email,
-                "parent"
-            #     "note": contact_fax,  # TODO need to add custom field fax and email data into fax rather note
-            # }
+            partner_dict = {
+                "name": contact_name,
+                "title": salutation,
+                "parent_id": parent_customer,
+                "type": "contact",
+                "email": contact_email,
+                "customer_rank": 1,
+                "parent": parent_customer,
+                "note": contact_fax,  # TODO need to add custom field fax and email data into fax rather note
+            }
 
         existing_parent_id = request.env['res.partner'].search([('name', '=', customer_name)])
         if partner_dict:
