@@ -1,13 +1,20 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Vendor Product Import',
-    'version': '0.3',
+    'name': 'QuickBooks Data Import module ',
+    'version': '0.1',
     'development_status': 'Development',
     'category': '',
-    'summary': 'Tool for importing vendor product spreadsheets',
+    'summary': """
+    This module provide facility to import quickbooks data directly into odoo.
+    Step 1: Export quickbook data
+    Step 2: Upload file and select odoo model in which data need to be imported.
+    Step 3: Click Import 
+    Step 3: Verify data
+    """
+    ,
     'license': 'Other proprietary',
-    'author': '',
-    'website': '',
+    'author': 'Shahid Mehmood',
+    'website': 'www.mediodconsulting.com',
     'images': [
         '',
     ],
