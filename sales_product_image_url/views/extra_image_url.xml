@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="sh_image_url_form_view_custom" model="ir.ui.view">
+        <field name="name">sh.image.url.form.view.custom</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='shop']" position="after">
+                <label for="sh_extra_image_url" string="Extra Image Url">Extra image Url</label>
+                <field name="sh_extra_image_url"/>
+                <button name="get_image_urls" class="btn btn-primary mb-3 mt-2" style="display: flex;" type="object"
+                        string="Get Extra Images"/>
+                <label for="sh_mee" string="Last Sync Images" attrs="{'invisible': [('sh_extra_image_url','=',True)]}">
+                    Last Sync Images
+                </label>
+                <field name="sh_mee" readonly="1" attrs="{'invisible': [('sh_extra_image_url','=',True)]}"/>
+            </xpath>
+        </field>
+    </record>
+    <!-- Product Template form view -->
+    <record id="sh_product_template_only_form_inherit_view" model="ir.ui.view">
+        <field name="name">sh.product.template.only.form.inherit.view</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_only_form_view"/>
+        <field name="arch" type="xml">
+            <field name="categ_id" position="after">
+                <field name="product_image"/>
+            </field>
+        </field>
+    </record>
+    <!-- Product Product form view -->
+    <record id="sh_product_normal_form_inherit_view" model="ir.ui.view">
+        <field name="name">sh.product.normal.form.inherit.view</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <field name="categ_id" position="before">
+                <field name="product_image_1"/>
+            </field>
+        </field>
+    </record>
+
+    <!-- Product Product Variants form view -->
+    <record id="sh_product_variant_easy_edit_inherit_view_custom" model="ir.ui.view">
+        <field name="name">sh.product.normal.form.inherit.view.custom</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_variant_easy_edit_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='weight']" position="after">
+                <group></group>
+                <group name="shop" string="Shop">
+                    <field name="product_image_1"/>
+                    <field name="sh_extra_image_url"/>
+                </group>
+                <group></group>
+                <group>
+                    <button name="get_image_urls" class="btn btn-primary mb-2 mt-2" style="display: flex;" type="object"
+                            string="Get Extra Images"/>
+                    <field name="sh_mee" readonly="1" attrs="{'invisible': [('sh_extra_image_url','=',True)]}"/>
+                </group>
+            </xpath>
+
+        </field>
+    </record>
+
+
+</odoo>

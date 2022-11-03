@@ -43,8 +43,12 @@ class WizardGetFile(models.TransientModel):
             elif self.model_name == 'customer':
                 odoo_product_dict["name"] = str(row["CustomerName"])
                 odoo_product_dict["customer_list_id"] = row["ï»¿CustomerListID"]
-                odoo_product_dict["parent"] = str(row["ParentRefFullName"])
-                odoo_product_dict["property_payment_term_id"] = row["TermsRefFullName"]
+                # odoo_product_dict["property_payment_term_id.name"] = row["TermsRefFullName"]
+                existing_parent_id = request.env['res.partner'].search([('parent_id.name', '=', row["ParentRefFullName"])])
+                if existing_parent_id:
+                    existing_parent_id.write(odoo_product_dict)
+                else:
+                    self.env['res.partner'].sudo().create(odoo_product_dict)
                 odoo_product_dict["phone"] = row["Phone"]
                 odoo_product_dict["active"] = row["CustomerIsActive"]
                 # odoo_product_dict["company_id"] = row["Company"]
