@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'QuickBooks Data Import module ',
+    'name': 'QuickBooks Data Import ',
     'version': '0.1',
     'development_status': 'Development',
     'category': '',
