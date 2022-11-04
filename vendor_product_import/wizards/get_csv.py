@@ -32,7 +32,7 @@ class WizardGetFile(models.TransientModel):
         df = pd.read_csv(file_name, error_bad_lines=False)
         for date, row in df.T.iteritems():
             if self.model_name == 'product':
-                self.import_product(row)
+                self.import_quickbooks_product_data(row)
             elif self.model_name == 'customer':
                 self.import_quickbooks_customer_data(row)
             elif self.model_name == 'account':
@@ -48,7 +48,7 @@ class WizardGetFile(models.TransientModel):
         :param row:
         :return:
         """
-        odoo_product_dict = {"name": str(row["Name"]), "standard_price": row["Cost"]}
+        odoo_product_dict = {"invoice_partner_display_name": str(row["Product"])}
         existing_product = request.env['mediod.product.template'].search([('name', '=', row["Name"])])
         if existing_product:
             existing_product.write(odoo_product_dict)
@@ -151,3 +151,35 @@ class WizardGetFile(models.TransientModel):
                 print("existing customer")
             else:
                 self.env['res.partner'].sudo().create(partner_dict)
+
+
+    def import_quickbooks_product_data(self, row):
+        """
+        Import quickbooks product data
+        :param row:
+        :return:
+        """
+        product_dict = {}
+        name = row["Name"]
+        list_id = row["ï»¿ListId"]
+        description_sale = row['SalesDesc']
+        description_purchase=row['PurchaseDesc']
+        sale_price = row['SalesPrice']
+        is_active = row['IsActive']
+        manufacturer_part_number = row['ManufacturerPartNumber']
+        product_dict={
+            "name": name,
+            "list_id": list_id,
+            "description_sale": description_sale,
+            "description_purchase":description_purchase,
+            "list_price": sale_price,
+            "active": is_active,
+            "manufacturer_part_number":manufacturer_part_number,
+
+        }
+        is_existing_product = request.env['product.template'].search([('name', '=', row["Name"])])
+        if is_existing_product:
+            is_existing_product.write(product_dict)
+        else:
+            self.env['product.template'].sudo().create(product_dict)
+

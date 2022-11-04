@@ -5,6 +5,8 @@ class ProductTemplateInherit(models.Model):
     _inherit = "product.template"
 
     product_family_id = fields.Integer('Part Family ID')
+    list_id = fields.Char('List Id')
+    manufacturer_part_number = fields.Char('Manufacturer Part Number')
     product_brand_id = fields.Char('Brand Id')
     product_brand_name = fields.Char('Brand Name')
     product_category_id = fields.Char('Category ID')
