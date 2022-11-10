@@ -6,6 +6,7 @@ from odoo import fields, models
 from odoo.http import request
 
 
+
 class WizardGetFile(models.TransientModel):
     _name = "mediod.csv.wizard"
 
@@ -13,7 +14,8 @@ class WizardGetFile(models.TransientModel):
         ('product', 'Products'),
         ('customer', 'Customer'),
         ('account', 'Chart of Accounts'),
-        ('invoice', 'Invoice')]
+        ('invoice', 'Invoice'),
+        ('pricelist', 'Price List')]
     csv_file = fields.Binary('Upload CSV', required=True)
     # template_name = fields.Many2one('mediod.vendor.template', 'Template Name', required=True)
     model_name = fields.Selection(model_choices, 'Model Name')
@@ -39,6 +41,11 @@ class WizardGetFile(models.TransientModel):
                 self.import_chart_of_accounts(row)
             elif self.model_name == 'invoice':
                 self.import_invoice(row)
+            elif self.model_name == 'pricelist':
+
+                self.import_quickbooks_listprice_data(row)
+
+
             else:
                 pass
 
@@ -167,6 +174,45 @@ class WizardGetFile(models.TransientModel):
         sale_price = row['SalesPrice']
         is_active = row['IsActive']
         manufacturer_part_number = row['ManufacturerPartNumber']
+        bar_code = None
+        bar_code = row['BarCodeValue']
+        if math.isnan(bar_code):
+            # self.env['product.template'].sudo().create(bar_code = '_')
+            bar_code = None
+        uom_id = None
+        uom_id = row['UnitOfMeasureSetRefFullName']
+        if not isinstance(uom_id, str):
+            if math.isnan(uom_id):
+               uom_id = "Unit"
+        else:
+            pass
+        is_existing_uom_id = request.env['product.template'].search([('name', '=', uom_id)])
+
+        try:
+            if is_existing_uom_id.id is False:
+                uom_id_dict = {}
+                uom_name = uom_id
+
+                category_id = request.env['uom.category'].search([('name', '=', 'Unit')])
+                category_dict = {
+                    'name': category_id
+                }
+                if not category_id:
+                    self.env['uom.uom'].sudo().create(category_dict)
+                else:
+                    pass
+                rounding=0.0001
+                uom_id_dict = {
+                    "name": uom_name,
+                    "category_id": category_id[0].id,
+                    "rounding": rounding,
+                    "uom_type":'smaller'
+                }
+                odoo_uom = self.env['uom.uom'].sudo().create(uom_id_dict).id
+            else:
+                odoo_uom = is_existing_uom_id.id
+        except Exception as e:
+                print(e)
         product_dict={
             "name": name,
             "list_id": list_id,
@@ -175,7 +221,8 @@ class WizardGetFile(models.TransientModel):
             "list_price": sale_price,
             "active": is_active,
             "manufacturer_part_number":manufacturer_part_number,
-
+             "uom_id":odoo_uom,
+            "barcode":bar_code,
         }
         is_existing_product = request.env['product.template'].search([('name', '=', row["Name"])])
         if is_existing_product:
@@ -183,3 +230,32 @@ class WizardGetFile(models.TransientModel):
         else:
             self.env['product.template'].sudo().create(product_dict)
 
+    def import_quickbooks_listprice_data(self, row):
+        """
+        Import quickbooks pricelist data
+        :param row:
+        :return:
+        """
+        # product_dict={
+        #     "name":"England",
+        #     'product_item_ids':{
+        #
+        #     }
+        # }
+        #
+        # self.env['product.pricelist'].sudo().create(product_dict)
+        percent_price = row["Name"]
+        ItemRefFullName = row['ItemRefFullName']
+        product_dict = {
+                "name": "Mediod",
+                'item_ids': [((0, 0, {
+                    "name": 'Waqas',
+                    "min_quantity":1,
+                    "price":1,
+                    }))]
+            }
+        existing_parent_id = request.env['product.pricelist'].search([('name', '=', "Mediod")])
+        if existing_parent_id.id is False:
+                self.env['product.pricelist'].sudo().create(product_dict)
+        else:
+                self.env['product.pricelist'].sudo().write(product_dict)
