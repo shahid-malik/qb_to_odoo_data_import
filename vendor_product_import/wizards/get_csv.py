@@ -1,10 +1,10 @@
 import base64
-import os
 import math
+import os
+
 import pandas as pd
 from odoo import fields, models
 from odoo.http import request
-
 
 
 class WizardGetFile(models.TransientModel):
@@ -42,10 +42,7 @@ class WizardGetFile(models.TransientModel):
             elif self.model_name == 'invoice':
                 self.import_invoice(row)
             elif self.model_name == 'pricelist':
-
                 self.import_quickbooks_listprice_data(row)
-
-
             else:
                 pass
 
@@ -159,7 +156,6 @@ class WizardGetFile(models.TransientModel):
             else:
                 self.env['res.partner'].sudo().create(partner_dict)
 
-
     def import_quickbooks_product_data(self, row):
         """
         Import quickbooks product data
@@ -170,7 +166,7 @@ class WizardGetFile(models.TransientModel):
         name = row["Name"]
         list_id = row["ï»¿ListId"]
         description_sale = row['SalesDesc']
-        description_purchase=row['PurchaseDesc']
+        description_purchase = row['PurchaseDesc']
         sale_price = row['SalesPrice']
         is_active = row['IsActive']
         manufacturer_part_number = row['ManufacturerPartNumber']
@@ -183,7 +179,7 @@ class WizardGetFile(models.TransientModel):
         uom_id = row['UnitOfMeasureSetRefFullName']
         if not isinstance(uom_id, str):
             if math.isnan(uom_id):
-               uom_id = "Unit"
+                uom_id = "Unit"
         else:
             pass
         is_existing_uom_id = request.env['product.template'].search([('name', '=', uom_id)])
@@ -201,28 +197,28 @@ class WizardGetFile(models.TransientModel):
                     self.env['uom.uom'].sudo().create(category_dict)
                 else:
                     pass
-                rounding=0.0001
+                rounding = 0.0001
                 uom_id_dict = {
                     "name": uom_name,
                     "category_id": category_id[0].id,
                     "rounding": rounding,
-                    "uom_type":'smaller'
+                    "uom_type": 'smaller'
                 }
                 odoo_uom = self.env['uom.uom'].sudo().create(uom_id_dict).id
             else:
                 odoo_uom = is_existing_uom_id.id
         except Exception as e:
-                print(e)
-        product_dict={
+            print(e)
+        product_dict = {
             "name": name,
             "list_id": list_id,
             "description_sale": description_sale,
-            "description_purchase":description_purchase,
+            "description_purchase": description_purchase,
             "list_price": sale_price,
             "active": is_active,
-            "manufacturer_part_number":manufacturer_part_number,
-             "uom_id":odoo_uom,
-            "barcode":bar_code,
+            "manufacturer_part_number": manufacturer_part_number,
+            "uom_id": odoo_uom,
+            "barcode": bar_code,
         }
         is_existing_product = request.env['product.template'].search([('name', '=', row["Name"])])
         if is_existing_product:
@@ -244,18 +240,23 @@ class WizardGetFile(models.TransientModel):
         # }
         #
         # self.env['product.pricelist'].sudo().create(product_dict)
-        percent_price = row["Name"]
-        ItemRefFullName = row['ItemRefFullName']
-        product_dict = {
-                "name": "Mediod",
-                'item_ids': [((0, 0, {
-                    "name": 'Waqas',
-                    "min_quantity":1,
-                    "price":1,
-                    }))]
-            }
-        existing_parent_id = request.env['product.pricelist'].search([('name', '=', "Mediod")])
-        if existing_parent_id.id is False:
-                self.env['product.pricelist'].sudo().create(product_dict)
+        # ///////////////////////////////////////////
+
+        existing_pricelist_id = request.env['product.pricelist'].search([('name', '=', "P2")], limit=1,
+                                                                        order='id desc')
+        if not existing_pricelist_id:
+            pricelist_id = self.env['product.pricelist'].create({'name': 'P2'})
         else:
-                self.env['product.pricelist'].sudo().write(product_dict)
+            pricelist_id = existing_pricelist_id
+            item_price = row["Name"].split('%')[0]
+            item_name = row['ItemRefFullName']
+            compute_price = 'percentage'
+            applied_on = '1_product'
+            product_tmpl_id = self.env['product.template'].search([('name','=','item_name')])
+            if product_tmpl_id:
+                existing_pricelist_id.item_ids = [(0, 0,
+                                                   {"pricelist_id": pricelist_id.id,
+                                                    "percent_price":item_price,
+                                                    "name":item_name,
+                                                    "compute_price": compute_price, "applied_on": applied_on,
+                                                    "product_tmpl_id": product_tmpl_id})]
