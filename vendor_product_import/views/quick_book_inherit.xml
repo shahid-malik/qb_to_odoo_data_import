@@ -11,6 +11,9 @@
             <xpath expr="//field[@name='category_id']" position="after">
                 <field name="parent"/>
             </xpath>
+            <xpath expr="//field[@name='email']" position="after">
+                <field name="fax"/>
+            </xpath>
         </field>
     </record>
 </odoo>

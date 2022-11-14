@@ -1,7 +1,9 @@
 import base64
 import os
 import math
+
 import pandas as pd
+
 from odoo import fields, models
 from odoo.http import request
 
@@ -135,7 +137,7 @@ class WizardGetFile(models.TransientModel):
                 "company_type": customer_type,
                 "phone": customer_phone,
                 "email": contact_email,
-                "customer_rank": 1
+                "customer_rank": 1,
             }
         else:
             print("create contact")
@@ -143,12 +145,13 @@ class WizardGetFile(models.TransientModel):
             partner_dict = {
                 "name": contact_name,
                 "title": salutation,
-                "parent_id": parent_customer,
+                "parent_id": parent_customer.id,
                 "type": "contact",
                 "email": contact_email,
                 "customer_rank": 1,
-                "parent": parent_customer,
-                "note": contact_fax,  # TODO need to add custom field fax and email data into fax rather note
+                "parent": parent_customer.name,
+                "fax": contact_fax,  # TODO need to add custom field fax and email data into fax rather note
+                'active': is_active,
             }
 
         existing_parent_id = request.env['res.partner'].search([('name', '=', customer_name)])
