@@ -11,7 +11,7 @@
             <xpath expr="//field[@name='category_id']" position="after">
                 <field name="parent"/>
             </xpath>
-            <xpath expr="//field[@name='email']" position="after">
+            <xpath expr="//field[@name='website']" position="before">
                 <field name="fax"/>
             </xpath>
         </field>
