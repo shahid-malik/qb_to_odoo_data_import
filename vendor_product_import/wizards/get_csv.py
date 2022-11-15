@@ -3,6 +3,7 @@ import math
 import os
 
 import pandas as pd
+
 from odoo import fields, models
 from odoo.http import request
 
@@ -100,7 +101,7 @@ class WizardGetFile(models.TransientModel):
         :return:
         """
         customer_name = str(row["CustomerName"])
-        customer_list_id = row["ï»¿CustomerListID"]
+        customer_list_id = row["ï»¿CustomerListID"] if "ï»¿CustomerListID" in row else row["CustomerListID"]
         is_active = row['CustomerIsActive']
         parent_name = row['ParentRefFullName']
         company_name = row['CompanyName']
@@ -113,6 +114,35 @@ class WizardGetFile(models.TransientModel):
         zip = row['BillPostalCode'] if self.check_is_nan(row['BillPostalCode']) is False else None
         state_code = row['BillState'] if self.check_is_nan(row['BillState']) is False else ''
         state_id = self.env['res.country.state'].sudo().search([('code', '=', state_code)])
+        salutation = row['Salutation'] if self.check_is_nan(row['Salutation']) is False else None
+        if salutation is not None:
+            partner_title = self.env['res.partner.title'].sudo().search([('name', '=', salutation)])
+            if partner_title:
+                customer_title = partner_title[0].id
+            else:
+                customer_title = self.env['res.partner.title'].sudo().create({'name': salutation}).id
+        else:
+            customer_title = None
+
+        firstname = row['FirstName'] if self.check_is_nan(row['FirstName']) is False else None
+        middle_name = row['MiddleName'] if self.check_is_nan(row['MiddleName']) is False else None
+        lastname = row['LastName'] if self.check_is_nan(row['LastName']) is False else None
+
+        payment_term_name = row['TermsRefFullName'] if self.check_is_nan(row['TermsRefFullName']) is False else None
+        if payment_term_name is not None:
+            payment_term_id = self.env['account.payment.term'].sudo().search([('name', '=', payment_term_name)])
+            if payment_term_id:
+                payment_term = payment_term_id[0].id
+            else:
+                payment_term = self.env['account.payment.term'].sudo().create({
+                    'name': payment_term_name,
+                    'note': 'Payment_term:' + str(payment_term_name),
+                    'active': True,
+                    'sequence': 10,
+                }).id
+        else:
+            payment_term = None
+
         if company_name:
             company_type = "company"
         else:
@@ -129,11 +159,17 @@ class WizardGetFile(models.TransientModel):
                 'name': customer_name,
                 'customer_list_id': customer_list_id,
                 'company_type': company_type,
+                'customer_rank': 1,
+                'title': customer_title,
+                'property_payment_term_id': payment_term,
+                'first_name': firstname,
+                'middle_name': middle_name,
+                'last_name': lastname,
                 'street': street,
                 'city': city,
                 'state_id': state_id[0].id if state_id else None,
                 'zip': zip,
-                'customer_rank': 1,
+                'type': 'contact',
                 'phone': phone,
                 'email': email,
                 'fax': fax,
@@ -147,11 +183,17 @@ class WizardGetFile(models.TransientModel):
                 'parent_id': parent_id[0].id if parent_id else None,
                 'customer_list_id': customer_list_id,
                 'company_type': company_type,
+                'customer_rank': 1,
+                'title': customer_title,
+                'property_payment_term_id': payment_term,
+                'first_name': firstname,
+                'middle_name': middle_name,
+                'last_name': lastname,
                 'street': street,
                 'city': city,
                 'state_id': state_id[0].id if state_id else None,
                 'zip': zip,
-                'customer_rank': 1,
+                'type': 'invoice',
                 'phone': phone,
                 'email': email,
                 'fax': fax,
@@ -163,78 +205,44 @@ class WizardGetFile(models.TransientModel):
         if existing_customer:
             existing_customer[0].write(partner_dict)
         else:
-            self.env['res.partner'].sudo().create(partner_dict)
+            new_rec = self.env['res.partner'].sudo().create(partner_dict)
 
-        # customer_name = str(row["CustomerName"])
-        # customer_list_id = row["ï»¿CustomerListID"]
-        # is_active = row['CustomerIsActive']
-        # parent_customer = row['ParentRefFullName']
-        # is_existing_customer = request.env['res.partner'].search([('parent_id.name', '=', row["ParentRefFullName"])])
-        # # customer_company = row['CompanyName']
-        # salutation = row['Salutation']
-        # customer_phone = row['Phone']
-        # is_company = row['CompanyName']
-        # if is_company:
-        #     customer_type = "company"
-        # else:
-        #     customer_type = "person"
-        # contact_first_name = row['FirstName']
-        # contact_first_name = str(contact_first_name) if type(contact_first_name) != float else ""
-        #
-        # contact_last_name = row['LastName']
-        # contact_last_name = str(contact_last_name) if type(contact_last_name) != float else ""
-        #
-        # contact_middle_name = row['MiddleName']
-        # contact_middle_name = str(contact_middle_name) if type(contact_middle_name) != float else ""
-        #
-        # contact_fax = row['Fax']
-        # contact_email = row['Email']
-        # contact_name = contact_first_name + " " + contact_middle_name + " " + contact_last_name
-        # partner_dict = {}
-        # try:
-        #     is_parent = math.isnan(parent_customer)
-        # except:
-        #     is_parent = False
-        #
-        # #  without parent_id
-        # if is_parent:
-        #     print(parent_customer, is_parent)
-        #     partner_dict = {
-        #         "name": customer_name,
-        #         "customer_list_id": customer_list_id,
-        #         "fax": contact_fax,
-        #         "active": is_active,
-        #         "company_type": customer_type,
-        #         # "phone": customer_phone,
-        #         # "email": contact_email,
-        #         # "customer_rank": 1
-        #     }
-        # # with parent id
-        # else:
-        #     print("create contact")
-        #     parent_customer = request.env['res.partner'].search([('name', '=', parent_customer)])
-        #     partner_dict = {
-        #         "name": contact_name,
-        #         # "title": salutation,
-        #         "parent_id": parent_customer[0].id if parent_customer else None,
-        #         # "type": "contact",
-        #         # "email": contact_email,
-        #         # "customer_rank": 1,
-        #         # "parent": parent_customer[0].name if parent_customer else None,
-        #         'customer_list_id': customer_list_id,
-        #         "company_type": customer_type,
-        #         "fax": contact_fax,  # TODO need to add custom field fax and email data into fax rather note
-        #         'active': is_active,
-        #     }
-        #
-        # existing_customer = request.env['res.partner'].search([('name', '=', contact_name)])
-        # if partner_dict:
-        #     if existing_customer:
-        #         existing_customer[0].write(partner_dict)
-        #     else:
-        #         self.env['res.partner'].sudo().create(partner_dict)
-        # else:
-        #     pass
+        # shipping Address of type Delivery
+        ship_addr_1 = row['ShipAddr1'] if self.check_is_nan(row['ShipAddr1']) is False else None
+        ship_addr_2 = row['ShipAddr2'] if self.check_is_nan(row['ShipAddr2']) is False else None
+        ship_addr_3 = row['ShipAddr3'] if self.check_is_nan(row['ShipAddr3']) is False else None
+        ship_city = row['ShipCity'] if self.check_is_nan(row['ShipCity']) is False else None
+        ship_state_code = row['ShipState'] if self.check_is_nan(row['ShipState']) is False else None
+        ship_state_id = self.env['res.country.state'].sudo().search([('code', '=', ship_state_code)])
+        ship_country_code = row['ShipCountry'] if self.check_is_nan(row['ShipCountry']) is False else None
+        ship_country_id = self.env['res.country'].sudo().search([('code', '=', ship_country_code)])
+        ship_postal_code = row['ShipPostalCode'] if self.check_is_nan(row['ShipPostalCode']) is False else None
+        ship_note = row['ShipNote'] if self.check_is_nan(row['ShipNote']) is False else None
+
+        shipping_address_dict = {
+            'type': 'delivery',
+            'name': ship_addr_1,
+            'street': ship_addr_2,
+            'street2': ship_addr_3,
+            'city': ship_city,
+            'state_id': ship_state_id[0].id if ship_state_id else None,
+            'zip': ship_postal_code,
+            'country_id': ship_country_id[0].id if ship_country_id else None,
+            'comment': ship_note,
+            'parent_id': existing_customer[0].id if existing_customer else new_rec.id
+        }
+
+        if ship_addr_1 is not None:
+            existing_ship_address = self.env['res.partner'].sudo().search(
+                ['&', '&', ('type', '=', 'delivery'), ('name', '=', ship_addr_1),
+                 ('parent_id','=', existing_customer[0].id if existing_customer else None)])
+
+            if existing_ship_address:
+                existing_ship_address[0].write(shipping_address_dict)
+            else:
+                self.env['res.partner'].sudo().create(shipping_address_dict)
+        else:
+            pass
 
     def import_quickbooks_product_data(self, row):
         """
@@ -322,7 +330,6 @@ class WizardGetFile(models.TransientModel):
         # self.env['product.pricelist'].sudo().create(product_dict)
         # ///////////////////////////////////////////
 
-
         existing_pricelist_id = request.env['product.pricelist'].search([('name', '=', "P3")], limit=1,
                                                                         order='id desc')
         if not existing_pricelist_id:
@@ -343,7 +350,6 @@ class WizardGetFile(models.TransientModel):
                                                     "name": item_name,
                                                     "compute_price": compute_price, "applied_on": applied_on,
                                                     "product_tmpl_id": product_tmpl_id})]
-
 
 # if not product_tmpl_id:
 #     product_list = {}
