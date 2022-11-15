@@ -1,6 +1,7 @@
 import base64
 import math
 import os
+import re
 
 import pandas as pd
 from odoo import fields, models
@@ -32,7 +33,10 @@ class WizardGetFile(models.TransientModel):
             f.write(file_string)
 
         df = pd.read_csv(file_name, error_bad_lines=False)
-        for date, row in df.T.iteritems():
+        i =0
+        for date, row in df.T.items():
+            print("#####################################################################################")
+            print(i)
             if self.model_name == 'product':
                 self.import_quickbooks_product_data(row)
             elif self.model_name == 'customer':
@@ -45,6 +49,7 @@ class WizardGetFile(models.TransientModel):
                 self.import_quickbooks_listprice_data(row)
             else:
                 pass
+            i = i+1
 
     def import_product(self, row):
         """
@@ -323,37 +328,44 @@ class WizardGetFile(models.TransientModel):
         # ///////////////////////////////////////////
 
 
-        existing_pricelist_id = request.env['product.pricelist'].search([('name', '=', "P3")], limit=1,
+        pricelist_id = request.env['product.pricelist'].search([('name', '=', "P9")], limit=1,
                                                                         order='id desc')
-        if not existing_pricelist_id:
-            pricelist_id = self.env['product.pricelist'].create({'name': 'P3'})
+        if not pricelist_id:
+            pricelist_id = self.env['product.pricelist'].create({'name': 'P9'})
         else:
-            pricelist_id = existing_pricelist_id
-            item_price = float(row["Name"].split('%')[0])
-            if not item_price:
-                item_price = float(row["Name"].split('%')[0])
+            product_list = {}
+            list_id = row['ListID']
             item_name = row['ItemRefFullName']
+            discount_price = row["CustomPrice"]
+            standard_test_price = row["Name"]
+            a = re.findall(r"[-+]?\d*\.\d+|\d+", standard_test_price)
+            standard_price = float(a[0])
+            product_list = {
+                    "list_id": list_id,
+                    "name": item_name,
+                    "list_price": discount_price,
+                    "standard_price":standard_price,
+                }
+            self.env['product.template'].sudo().create(product_list)
+            a = re.findall(r"[-+]?\d*\.\d+|\d+", standard_test_price)
+            item_price = float(a[0])
             compute_price = 'percentage'
             applied_on = '1_product'
-            product_tmpl_id = self.env['product.template'].search([('name', '=', 'item_name')])
+            product_tmpl_id = request.env['product.template'].search([('name', '=', item_name)])
+            print(product_tmpl_id)
             if product_tmpl_id:
-                existing_pricelist_id.item_ids = [(0, 0,
-                                                   {"pricelist_id": pricelist_id.id,
-                                                    "percent_price": item_price,
-                                                    "name": item_name,
-                                                    "compute_price": compute_price, "applied_on": applied_on,
-                                                    "product_tmpl_id": product_tmpl_id})]
+               pricelist_id.item_ids = [(0, 0,{"pricelist_id": pricelist_id.id,
+                                                         "percent_price": item_price,
+                                                         "name": item_name,
+                                                         "compute_price": compute_price,
+                                                         "applied_on": applied_on,
+                                                         "product_tmpl_id": product_tmpl_id[0].id if product_tmpl_id else None})]
 
-
-# if not product_tmpl_id:
-#     product_list = {}
-#     list_id = row['ListID']
-#     item_name = row['ItemRefFullName']
-#     discount_price = row["Name"].split('%')[0]
-#     product_list = {
-#         "list_id": list_id,
-#         "name": item_name,
-#         "list_price": discount_price,
-#     }
-#     self.env['product.template'].sudo().create(product_list)
+        return True
+ # res = [int(i) for i in row["Name"] if i.isdigit()]
+            # item_price = str(res)
+            # s = str(res[0])
+            # v = str(res[1])
+            # item_price = s + v
+            # item_price = float(row["Name"].split('%')[0])
 # else:
