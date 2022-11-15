@@ -2,7 +2,6 @@ import base64
 import math
 import os
 
-
 import pandas as pd
 from odoo import fields, models
 from odoo.http import request
@@ -87,6 +86,13 @@ class WizardGetFile(models.TransientModel):
         else:
             request.env['account.account'].sudo().create(odoo_product_dict)
 
+    def check_is_nan(self, val):
+        try:
+            math.isnan(val)
+            return True
+        except:
+            return False
+
     def import_quickbooks_customer_data(self, row):
         """
         Import quickbooks customer data
@@ -94,68 +100,141 @@ class WizardGetFile(models.TransientModel):
         :return:
         """
         customer_name = str(row["CustomerName"])
-        customer_id = row["ï»¿CustomerListID"]
+        customer_list_id = row["ï»¿CustomerListID"]
         is_active = row['CustomerIsActive']
-        parent_customer = row['ParentRefFullName']
-        is_existing_customer = request.env['res.partner'].search([('parent_id.name', '=', row["ParentRefFullName"])])
-        customer_company = row['CompanyName']
-        salutation = row['Salutation']
-        customer_phone = row['Phone']
-        is_company = row['CompanyName']
-        if is_company:
-            customer_type = "company"
+        parent_name = row['ParentRefFullName']
+        company_name = row['CompanyName']
+        phone = row['Phone'] if self.check_is_nan(row['Phone']) is False else None
+        email = row['Email'] if self.check_is_nan(row['Email']) is False else None
+        fax = row['Fax'] if self.check_is_nan(row['Fax']) is False else None
+        notes = row['Notes'] if self.check_is_nan(row['Notes']) is False else None
+        street = row['BillAddr3'] if self.check_is_nan(row['BillAddr3']) is False else None
+        city = row['BillCity'] if self.check_is_nan(row['BillCity']) is False else None
+        zip = row['BillPostalCode'] if self.check_is_nan(row['BillPostalCode']) is False else None
+        state_code = row['BillState'] if self.check_is_nan(row['BillState']) is False else ''
+        state_id = self.env['res.country.state'].sudo().search([('code', '=', state_code)])
+        if company_name:
+            company_type = "company"
         else:
-            customer_type = "individual"
-        contact_first_name = row['FirstName']
-        contact_first_name = str(contact_first_name) if contact_first_name != 'nan' else ""
+            company_type = "person"
 
-        contact_last_name = row['LastName']
-        contact_last_name = str(contact_last_name) if contact_last_name != 'nan' else ""
-
-        contact_middle_name = row['MiddleName']
-        contact_middle_name = str(contact_middle_name) if contact_middle_name != 'nan' else ""
-
-        contact_fax = row['Fax']
-        contact_email = row['Email']
-        contact_name = contact_first_name + " " + contact_middle_name + " " + contact_last_name
-        partner_dict = {}
         try:
-            is_parent = math.isnan(parent_customer)
+            # will return False if Parent name is Present
+            is_parent = math.isnan(parent_name)
         except:
             is_parent = False
 
         if is_parent:
-            print(parent_customer, is_parent)
             partner_dict = {
-                "name": customer_name,
-                "id": customer_id,
-                "active": is_active,
-                "company_type": customer_type,
-                "phone": customer_phone,
-                "email": contact_email,
-                "customer_rank": 1
+                'name': customer_name,
+                'customer_list_id': customer_list_id,
+                'company_type': company_type,
+                'street': street,
+                'city': city,
+                'state_id': state_id[0].id if state_id else None,
+                'zip': zip,
+                'customer_rank': 1,
+                'phone': phone,
+                'email': email,
+                'fax': fax,
+                'comment': notes,
+                'active': is_active,
             }
         else:
-            print("create contact")
-            parent_customer = request.env['res.partner'].search([('name', '=', parent_customer)])
+            parent_id = self.env['res.partner'].sudo().search([('name', '=', parent_name)])
             partner_dict = {
-                "name": contact_name,
-                "title": salutation,
-                "parent_id": parent_customer,
-                "type": "contact",
-                "email": contact_email,
-                "customer_rank": 1,
-                "parent": parent_customer,
-                "note": contact_fax,  # TODO need to add custom field fax and email data into fax rather note
+                'name': customer_name,
+                'parent_id': parent_id[0].id if parent_id else None,
+                'customer_list_id': customer_list_id,
+                'company_type': company_type,
+                'street': street,
+                'city': city,
+                'state_id': state_id[0].id if state_id else None,
+                'zip': zip,
+                'customer_rank': 1,
+                'phone': phone,
+                'email': email,
+                'fax': fax,
+                'comment': notes,
+                'active': is_active,
             }
 
-        existing_parent_id = request.env['res.partner'].search([('name', '=', customer_name)])
-        if partner_dict:
-            if existing_parent_id:
-                # existing_parent_id.write(customer_dict)
-                print("existing customer")
-            else:
-                self.env['res.partner'].sudo().create(partner_dict)
+        existing_customer = self.env['res.partner'].sudo().search([('name', '=', customer_name)])
+        if existing_customer:
+            existing_customer[0].write(partner_dict)
+        else:
+            self.env['res.partner'].sudo().create(partner_dict)
+
+        # customer_name = str(row["CustomerName"])
+        # customer_list_id = row["ï»¿CustomerListID"]
+        # is_active = row['CustomerIsActive']
+        # parent_customer = row['ParentRefFullName']
+        # is_existing_customer = request.env['res.partner'].search([('parent_id.name', '=', row["ParentRefFullName"])])
+        # # customer_company = row['CompanyName']
+        # salutation = row['Salutation']
+        # customer_phone = row['Phone']
+        # is_company = row['CompanyName']
+        # if is_company:
+        #     customer_type = "company"
+        # else:
+        #     customer_type = "person"
+        # contact_first_name = row['FirstName']
+        # contact_first_name = str(contact_first_name) if type(contact_first_name) != float else ""
+        #
+        # contact_last_name = row['LastName']
+        # contact_last_name = str(contact_last_name) if type(contact_last_name) != float else ""
+        #
+        # contact_middle_name = row['MiddleName']
+        # contact_middle_name = str(contact_middle_name) if type(contact_middle_name) != float else ""
+        #
+        # contact_fax = row['Fax']
+        # contact_email = row['Email']
+        # contact_name = contact_first_name + " " + contact_middle_name + " " + contact_last_name
+        # partner_dict = {}
+        # try:
+        #     is_parent = math.isnan(parent_customer)
+        # except:
+        #     is_parent = False
+        #
+        # #  without parent_id
+        # if is_parent:
+        #     print(parent_customer, is_parent)
+        #     partner_dict = {
+        #         "name": customer_name,
+        #         "customer_list_id": customer_list_id,
+        #         "fax": contact_fax,
+        #         "active": is_active,
+        #         "company_type": customer_type,
+        #         # "phone": customer_phone,
+        #         # "email": contact_email,
+        #         # "customer_rank": 1
+        #     }
+        # # with parent id
+        # else:
+        #     print("create contact")
+        #     parent_customer = request.env['res.partner'].search([('name', '=', parent_customer)])
+        #     partner_dict = {
+        #         "name": contact_name,
+        #         # "title": salutation,
+        #         "parent_id": parent_customer[0].id if parent_customer else None,
+        #         # "type": "contact",
+        #         # "email": contact_email,
+        #         # "customer_rank": 1,
+        #         # "parent": parent_customer[0].name if parent_customer else None,
+        #         'customer_list_id': customer_list_id,
+        #         "company_type": customer_type,
+        #         "fax": contact_fax,  # TODO need to add custom field fax and email data into fax rather note
+        #         'active': is_active,
+        #     }
+        #
+        # existing_customer = request.env['res.partner'].search([('name', '=', contact_name)])
+        # if partner_dict:
+        #     if existing_customer:
+        #         existing_customer[0].write(partner_dict)
+        #     else:
+        #         self.env['res.partner'].sudo().create(partner_dict)
+        # else:
+        #     pass
 
     def import_quickbooks_product_data(self, row):
         """
@@ -241,6 +320,7 @@ class WizardGetFile(models.TransientModel):
         # }
         #
         # self.env['product.pricelist'].sudo().create(product_dict)
+        # ///////////////////////////////////////////
 
 
         existing_pricelist_id = request.env['product.pricelist'].search([('name', '=', "P3")], limit=1,
@@ -255,14 +335,14 @@ class WizardGetFile(models.TransientModel):
             item_name = row['ItemRefFullName']
             compute_price = 'percentage'
             applied_on = '1_product'
-            product_tmpl_id = self.env['product.template'].search([('name','=',item_name)])
+            product_tmpl_id = self.env['product.template'].search([('name', '=', 'item_name')])
             if product_tmpl_id:
                 existing_pricelist_id.item_ids = [(0, 0,
-                                 {"pricelist_id": pricelist_id.id,
-                                  "percent_price":item_price,
-                                   "name":item_name,
-                                    "compute_price": compute_price, "applied_on": applied_on,
-                                    "product_tmpl_id": product_tmpl_id.id})]
+                                                   {"pricelist_id": pricelist_id.id,
+                                                    "percent_price": item_price,
+                                                    "name": item_name,
+                                                    "compute_price": compute_price, "applied_on": applied_on,
+                                                    "product_tmpl_id": product_tmpl_id})]
 
 
 # if not product_tmpl_id:
