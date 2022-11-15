@@ -2,6 +2,7 @@ import base64
 import math
 import os
 
+
 import pandas as pd
 from odoo import fields, models
 from odoo.http import request
@@ -240,23 +241,39 @@ class WizardGetFile(models.TransientModel):
         # }
         #
         # self.env['product.pricelist'].sudo().create(product_dict)
-        # ///////////////////////////////////////////
 
-        existing_pricelist_id = request.env['product.pricelist'].search([('name', '=', "P2")], limit=1,
+
+        existing_pricelist_id = request.env['product.pricelist'].search([('name', '=', "P3")], limit=1,
                                                                         order='id desc')
         if not existing_pricelist_id:
-            pricelist_id = self.env['product.pricelist'].create({'name': 'P2'})
+            pricelist_id = self.env['product.pricelist'].create({'name': 'P3'})
         else:
             pricelist_id = existing_pricelist_id
-            item_price = row["Name"].split('%')[0]
+            item_price = float(row["Name"].split('%')[0])
+            if not item_price:
+                item_price = float(row["Name"].split('%')[0])
             item_name = row['ItemRefFullName']
             compute_price = 'percentage'
             applied_on = '1_product'
-            product_tmpl_id = self.env['product.template'].search([('name','=','item_name')])
+            product_tmpl_id = self.env['product.template'].search([('name','=',item_name)])
             if product_tmpl_id:
                 existing_pricelist_id.item_ids = [(0, 0,
-                                                   {"pricelist_id": pricelist_id.id,
-                                                    "percent_price":item_price,
-                                                    "name":item_name,
-                                                    "compute_price": compute_price, "applied_on": applied_on,
-                                                    "product_tmpl_id": product_tmpl_id})]
+                                 {"pricelist_id": pricelist_id.id,
+                                  "percent_price":item_price,
+                                   "name":item_name,
+                                    "compute_price": compute_price, "applied_on": applied_on,
+                                    "product_tmpl_id": product_tmpl_id.id})]
+
+
+# if not product_tmpl_id:
+#     product_list = {}
+#     list_id = row['ListID']
+#     item_name = row['ItemRefFullName']
+#     discount_price = row["Name"].split('%')[0]
+#     product_list = {
+#         "list_id": list_id,
+#         "name": item_name,
+#         "list_price": discount_price,
+#     }
+#     self.env['product.template'].sudo().create(product_list)
+# else:
