@@ -16,7 +16,8 @@ class WizardGetFile(models.TransientModel):
         ('customer', 'Customer'),
         ('account', 'Chart of Accounts'),
         ('invoice', 'Invoice'),
-        ('pricelist', 'Price List')]
+        ('pricelist', 'Price List'),
+        ('saleorder', 'Sale Order')]
     csv_file = fields.Binary('Upload CSV', required=True)
     # template_name = fields.Many2one('mediod.vendor.template', 'Template Name', required=True)
     model_name = fields.Selection(model_choices, 'Model Name')
@@ -44,6 +45,8 @@ class WizardGetFile(models.TransientModel):
                 self.import_invoice(row)
             elif self.model_name == 'pricelist':
                 self.import_quickbooks_listprice_data(row)
+            elif self.model_name == 'saleorder':
+                self.import_quickbooks_saleorder_data(row)
             else:
                 pass
 
@@ -363,3 +366,6 @@ class WizardGetFile(models.TransientModel):
 #     }
 #     self.env['product.template'].sudo().create(product_list)
 # else:
+
+    def import_quickbooks_saleorder_data(self, row):
+        print('Hello World')
