@@ -38,5 +38,6 @@
         'views/product_template.xml',
         'views/product_template_inherit.xml',
         'views/quick_book_inherit.xml',
+        'views/account_move_inherit.xml',
     ],
 }

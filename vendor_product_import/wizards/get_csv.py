@@ -4,6 +4,7 @@ import os
 import re
 
 import pandas as pd
+
 from odoo import fields, models
 from odoo.http import request
 
@@ -34,7 +35,7 @@ class WizardGetFile(models.TransientModel):
             f.write(file_string)
 
         df = pd.read_csv(file_name, error_bad_lines=False)
-        i =0
+        i = 0
         for date, row in df.T.items():
             print("#####################################################################################")
             print(i)
@@ -43,16 +44,16 @@ class WizardGetFile(models.TransientModel):
             elif self.model_name == 'customer':
                 self.import_quickbooks_customer_data(row)
             elif self.model_name == 'account':
-                self.import_chart_of_accounts(row)
+                self.import_quickbooks_chart_of_accounts_data(row)
             elif self.model_name == 'invoice':
-                self.import_invoice(row)
+                self.import_quickbooks_invoice_data(row)
             elif self.model_name == 'pricelist':
                 self.import_quickbooks_listprice_data(row)
             elif self.model_name == 'saleorder':
                 self.import_quickbooks_saleorder_data(row)
             else:
                 pass
-            i = i+1
+            i = i + 1
 
     def import_product(self, row):
         """
@@ -242,7 +243,7 @@ class WizardGetFile(models.TransientModel):
         if ship_addr_1 is not None:
             existing_ship_address = self.env['res.partner'].sudo().search(
                 ['&', '&', ('type', '=', 'delivery'), ('name', '=', ship_addr_1),
-                 ('parent_id','=', existing_customer[0].id if existing_customer else None)])
+                 ('parent_id', '=', existing_customer[0].id if existing_customer else None)])
 
             if existing_ship_address:
                 existing_ship_address[0].write(shipping_address_dict)
@@ -337,9 +338,8 @@ class WizardGetFile(models.TransientModel):
         # self.env['product.pricelist'].sudo().create(product_dict)
         # ///////////////////////////////////////////
 
-
         pricelist_id = request.env['product.pricelist'].search([('name', '=', "P9")], limit=1,
-                                                                        order='id desc')
+                                                               order='id desc')
         if not pricelist_id:
             pricelist_id = self.env['product.pricelist'].create({'name': 'P9'})
         else:
@@ -351,11 +351,11 @@ class WizardGetFile(models.TransientModel):
             a = re.findall(r"[-+]?\d*\.\d+|\d+", standard_test_price)
             standard_price = float(a[0])
             product_list = {
-                    "list_id": list_id,
-                    "name": item_name,
-                    "list_price": discount_price,
-                    "standard_price":standard_price,
-                }
+                "list_id": list_id,
+                "name": item_name,
+                "list_price": discount_price,
+                "standard_price": standard_price,
+            }
             self.env['product.template'].sudo().create(product_list)
             a = re.findall(r"[-+]?\d*\.\d+|\d+", standard_test_price)
             item_price = float(a[0])
@@ -364,33 +364,261 @@ class WizardGetFile(models.TransientModel):
             product_tmpl_id = request.env['product.template'].search([('name', '=', item_name)])
             print(product_tmpl_id)
             if product_tmpl_id:
-               pricelist_id.item_ids = [(0, 0,{"pricelist_id": pricelist_id.id,
-                                                         "percent_price": item_price,
-                                                         "name": item_name,
-                                                         "compute_price": compute_price,
-                                                         "applied_on": applied_on,
-                                                         "product_tmpl_id": product_tmpl_id[0].id if product_tmpl_id else None})]
+                pricelist_id.item_ids = [(0, 0, {"pricelist_id": pricelist_id.id,
+                                                 "percent_price": item_price,
+                                                 "name": item_name,
+                                                 "compute_price": compute_price,
+                                                 "applied_on": applied_on,
+                                                 "product_tmpl_id": product_tmpl_id[
+                                                     0].id if product_tmpl_id else None})]
         return True
 
-# if not product_tmpl_id:
-#     product_list = {}
-#     list_id = row['ListID']
-#     item_name = row['ItemRefFullName']
-#     discount_price = row["Name"].split('%')[0]
-#     product_list = {
-#         "list_id": list_id,
-#         "name": item_name,
-#         "list_price": discount_price,
-#     }
-#     self.env['product.template'].sudo().create(product_list)
+    # if not product_tmpl_id:
+    #     product_list = {}
+    #     list_id = row['ListID']
+    #     item_name = row['ItemRefFullName']
+    #     discount_price = row["Name"].split('%')[0]
+    #     product_list = {
+    #         "list_id": list_id,
+    #         "name": item_name,
+    #         "list_price": discount_price,
+    #     }
+    #     self.env['product.template'].sudo().create(product_list)
 
- # res = [int(i) for i in row["Name"] if i.isdigit()]
-            # item_price = str(res)
-            # s = str(res[0])
-            # v = str(res[1])
-            # item_price = s + v
-            # item_price = float(row["Name"].split('%')[0])
-# else:
+    # res = [int(i) for i in row["Name"] if i.isdigit()]
+    # item_price = str(res)
+    # s = str(res[0])
+    # v = str(res[1])
+    # item_price = s + v
+    # item_price = float(row["Name"].split('%')[0])
+    # else:
 
     def import_quickbooks_saleorder_data(self, row):
         print('Hello World')
+
+    def import_quickbooks_chart_of_accounts_data(self, row):
+
+        account_dict = {}
+        my_str = row["Account"]
+        all_lists = re.split(r'(\d+)', my_str)
+        for rec in all_lists:
+            if not rec.isdigit():
+                my_list = rec
+
+        name = my_list
+        user_type_id = row["Type"]
+        code = row['Accnt. #']
+        type_id = self.env['account.account.type'].search([('name', '=', user_type_id)])
+        if type_id:
+            # type_id = request.env['account.account.type'].create({'name', '=', name})
+            account_id = self.env['account.account'].search([('code', '=', code)])
+            if account_id:
+                account_id.write({'name': name})
+            else:
+                account_dict = {
+                    "name": name,
+                    "user_type_id": type_id.id,
+                    "code": code,
+                    "reconcile": True,
+                    "company_id": 1,
+                }
+                self.env['account.account'].sudo().create(account_dict)
+
+    # if type_id:
+    #     type_id = self.env['account.account'].create({'name': user_type_id})
+    # user_id = request.env['account.account.type'].search([('user_type_id','=',user_type_id)])
+    # if not user_id:
+    #     user_id = self.env['account.account.type'].sudo().create(user_type_id)
+    # else:
+    #     user_type_id = user_id
+# .........................................................................................................
+    # def import_quickbooks_invoice_data(self, row):
+    #     customer_dict = {}
+    #     name = row['CustomerRefFullName']
+    #     customer_dict = {
+    #         "name": name,
+    #     }
+    #     partner = self.env['res.partner'].search([('name', '=', name)])
+    #     if partner:
+    #         customer = partner.id
+    #     else:
+    #         customer = self.env['res.partner'].sudo().create(customer_dict)
+    #
+    #     invoice_dict = {
+    #         'partner_id': customer,
+    #         'company_id': 1,
+    #     }
+    #     customer_ref = self.env['account.move'].search([('partner_id', '=', customer.id)])
+    #     if customer_ref:
+    #       customer_ref =  self.env['account.move'].write(invoice_dict)
+    #     else:
+    #       customer_ref =  self.env['account.move'].sudo().create(invoice_dict)
+    #     product_dict ={}
+    #     name = row['GroupLineItemFullName'] if self.check_is_nan(row['GroupLineItemFullName']) is False else None
+    #     quantity = row['GroupLineQuantity'] if self.check_is_nan(row['GroupLineQuantity']) is False else 0
+    #     price_subtotal = float(row['GroupLineAmount']) if self.check_is_nan(row['GroupLineAmount']) is False else 0.0
+    #     product_id = request.env['product.template'].search([('name', '=', name)])
+    #     if not product_id:
+    #         product_id_dict = {}
+    #         name = row['GroupLineItemFullName'] if self.check_is_nan(row['GroupLineItemFullName']) is False else None
+    #         list_price = row['GroupLineRate'] if self.check_is_nan(row['GroupLineRate']) is False else None
+    #         product_id_dict = {
+    #             "name":name,
+    #             "list_price":list_price,
+    #         }
+    #         product_id = self.env['product.template'].sudo().create(product_id_dict)
+    #         data =  {"product_id": product_id.id,
+    #                     "quantity": quantity,
+    #                     "move_id": customer_ref.id,
+    #                     "name": name,
+    #                     "price_subtotal": price_subtotal}
+    #         self.env['account.move.line'].sudo().create(data)
+    #
+    # def check_is_nan(self, val):
+    #     try:
+    #         math.isnan(val)
+    #         return True
+    #     except:
+    #         return False
+    # .......................................................................................
+    # customer_reference = self.env['res.partner'].search([('name', '=', name)])
+    # if customer_reference:
+    #     partner_id_name = self.env['res.partner'].write(customer_dict)
+    # else:
+    #     partner_id_name = self.env['res.partner'].sudo().create(customer_dict)
+    # if partner_id_name:
+    #     invoice_dict = {}
+    #     partner_id = customer_reference
+    #     invoice_dict = {
+    #         "partner_id": partner_id,
+    #     }
+    #     existing_partner_id = self.env['account.move'].search([('partner_id', '=', partner_id.id)])
+    #     if existing_partner_id:
+    #         self.env['account.move'].write(invoice_dict)
+    #     else:
+    #         self.env['account.move'].sudo().create(invoice_dict)
+
+    def import_quickbooks_invoice_data(self, row):
+        customer_dict = {}
+        name = row['CustomerRefFullName']
+        customer_dict = {
+        "name": name,
+        }
+        partner_name = self.env['res.partner'].search([('name', '=', name)])
+        if partner_name:
+            self.env['res.partner'].write(customer_dict)
+        else:
+            self.env['res.partner'].sudo().create(customer_dict)
+        product_dict = {}
+        Create_product_name = row['GroupLineItemFullName'] if self.check_is_nan(row['GroupLineItemFullName']) is False else None
+        list_price = float(row['GroupLineRate'])
+        if math.isnan(row['GroupLineRate']):
+                list_price = 0.0
+        product_dict = {
+            "name":Create_product_name,
+            "list_price":list_price,
+        }
+        product_name = self.env['product.product'].search([('name', '=', Create_product_name)])
+        if not product_name:
+            if Create_product_name is not None:
+                product_name = self.env['product.product'].sudo().create(product_dict)
+
+        invoice_dict = {}
+        partner_id = partner_name.id
+        ein = row ['EIN']
+        if math.isnan(ein):
+            ein = None
+        groupdesc = row ['GroupDesc']
+        if not isinstance(groupdesc, str):
+         if math.isnan(groupdesc):
+            groupdesc = None
+        groupquantity = row['GroupQuantity']
+        if math.isnan(groupquantity):
+            groupquantity = None
+        serialnumber = row['SerialNumber']
+        if math.isnan(serialnumber):
+            serialnumber = None
+        lotnumber = row['LotNumber']
+        if math.isnan(lotnumber):
+            lotnumber = None
+        servicedate = row['ServiceDate']
+        if not isinstance(servicedate, str):
+         if math.isnan(servicedate):
+            servicedate = None
+        invoice_dict = {
+            "ein": ein,
+            "groupdesc": groupdesc,
+            "groupquantity": groupquantity,
+            "serialnumber": serialnumber,
+            "lotnumber": lotnumber,
+            "servicedate": servicedate,
+            "partner_id": partner_id,
+            "move_type" : 'out_invoice',
+        }
+        invoice_name = self.env['account.move'].search([('partner_id', '=', partner_id)])
+        if not invoice_name:
+            invoice_name = self.env['account.move'].create(invoice_dict)
+        else:
+            invoice_name.write(invoice_dict)
+        if product_name:
+            self.env['account.move'].search([('partner_id', '=', partner_id)])
+            quantity = row['GroupLineQuantity']
+            if math.isnan(row['GroupLineQuantity']):
+                quantity = 0
+            GroupTxnLineID = row['GroupTxnLineID']
+            if not isinstance(GroupTxnLineID, str):
+             if math.isnan(row['GroupTxnLineID']):
+                GroupTxnLineID = 0
+            label_name = row ['GroupLineDesc']
+            uom_id = None
+            uom_id = row['UOM']
+            if not isinstance(uom_id, str):
+                if math.isnan(uom_id):
+                    uom_id = "Unit"
+            else:
+                pass
+            is_existing_uom_id = request.env['product.template'].search([('name', '=', uom_id)])
+
+            try:
+                if is_existing_uom_id.id is False:
+                    uom_id_dict = {}
+                    uom_name = uom_id
+
+                    category_id = request.env['uom.category'].search([('name', '=', 'Unit')])
+                    category_dict = {
+                        'name': category_id
+                    }
+                    if not category_id:
+                        self.env['uom.uom'].sudo().create(category_dict)
+                    else:
+                        pass
+                    rounding = 0.0001
+                    uom_id_dict = {
+                        "name": uom_name,
+                        "category_id": category_id[0].id,
+                        "rounding": rounding,
+                        "uom_type": 'smaller'
+                    }
+                    odoo_uom = self.env['uom.uom'].sudo().create(uom_id_dict).id
+                else:
+                    odoo_uom = is_existing_uom_id.id
+            except Exception as e:
+                print(e)
+        if Create_product_name is not None:
+            invoice_name.invoice_line_ids = [(0, 0, {"product_id": product_name.id,
+                                                 "quantity": quantity,
+                                                 "name": label_name,
+                                                 "account_id": 38,
+                                                 "grouptxnlineid": GroupTxnLineID,
+                                                 "product_uom_id": odoo_uom,
+                                                 "price_unit": list_price})]
+        else:
+            pass
+
+
+        def check_is_nan(self, val):
+            try:
+             math.isnan(val)
+             return True
+            except:
+             return False
