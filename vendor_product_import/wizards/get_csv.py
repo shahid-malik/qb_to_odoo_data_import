@@ -260,7 +260,8 @@ class WizardGetFile(models.TransientModel):
         """
         product_dict = {}
         name = row["Name"]
-        list_id = row["ï»¿ListId"]
+        list_id = row["ListId"]
+        # list_id = row["ï»¿ListId"]
         description_sale = row['SalesDesc']
         description_purchase = row['PurchaseDesc']
         sale_price = row['SalesPrice']
