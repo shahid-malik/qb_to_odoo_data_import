@@ -281,7 +281,8 @@ class WizardGetFile(models.TransientModel):
         bar_code = None
         bar_code = row['BarCodeValue']
         if not isinstance(bar_code, str):
-             bar_code = None
+            if math.isnan(bar_code):
+                bar_code = None
         uom_id = None
         uom_id = row['UnitOfMeasureSetRefFullName']
         if not isinstance(uom_id, str):
@@ -536,9 +537,11 @@ class WizardGetFile(models.TransientModel):
             "list_price":list_price,
         }
         product_name = self.env['product.product'].search([('name', '=', Create_product_name)])
-        if not product_name:
+        if len(product_name) == 0:
             if Create_product_name is not None:
                 product_name = self.env['product.product'].sudo().create(product_dict)
+        else:
+            product_name = product_name[0]
 
         invoice_dict = {}
         partner_id = partner_name.id
@@ -552,14 +555,17 @@ class WizardGetFile(models.TransientModel):
          if math.isnan(groupdesc):
             groupdesc = None
         groupquantity = row['GroupQuantity']
-        if math.isnan(groupquantity):
-            groupquantity = None
+        if not isinstance(groupquantity, str):
+            if math.isnan(groupquantity):
+              groupquantity = None
         serialnumber = row['SerialNumber']
-        if math.isnan(serialnumber):
-            serialnumber = None
+        if not isinstance(serialnumber, str):
+            if math.isnan(serialnumber):
+                serialnumber = None
         lotnumber = row['LotNumber']
-        if math.isnan(lotnumber):
-            lotnumber = None
+        if not isinstance(lotnumber, str):
+            if math.isnan(lotnumber):
+                lotnumber = None
         servicedate = row['ServiceDate']
         if not isinstance(servicedate, str):
          if math.isnan(servicedate):
@@ -638,16 +644,15 @@ class WizardGetFile(models.TransientModel):
                 print(e)
         if Create_product_name is not None:
             if invoice_name.id:
-                # for a in invoice_name:
-                #     if a.state == 'draft':
-                        invoice_name.invoice_line_ids = [(0, 0, {"product_id": product_name.id,
-                                                 "quantity": quantity,
-                                                 "name": label_name,
-                                                 "account_id": 38,
-                                                 "grouptxnlineid": GroupTxnLineID,
-                                                 "product_uom_id": odoo_uom,
-                                                 "price_unit": list_price})]
-
+                for a in invoice_name:
+                    if a.state == 'draft':
+                            invoice_name.invoice_line_ids = [(0, 0, {"product_id": product_name.id,
+                                                     "quantity": quantity,
+                                                     "name": label_name,
+                                                     "account_id": 38,
+                                                     "grouptxnlineid": GroupTxnLineID,
+                                                     "product_uom_id": odoo_uom,
+                                                     "price_unit": list_price})]
         else:
             pass
 
