@@ -26,6 +26,9 @@
             <xpath expr="//field[@name='quantity']" position="after">
              <field name="grouptxnlineid"/>
            </xpath>
+            <xpath expr="//field[@name='groupquantity']" position="after">
+             <field name="customer_list_id"/>
+           </xpath>
         </field>
     </record>
 </odoo>

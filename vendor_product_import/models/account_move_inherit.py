@@ -10,5 +10,6 @@ class AccountMove(models.Model):
     serialnumber = fields.Char('SerialNumber')
     lotnumber = fields.Char('LotNumber')
     servicedate = fields.Char('ServiceDate')
+    customer_list_id = fields.Char('List Id ')
 
 

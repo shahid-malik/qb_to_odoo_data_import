@@ -9,6 +9,9 @@ from odoo import fields, models
 from odoo.http import request
 
 
+
+invoice_id = False
+customer = False
 class WizardGetFile(models.TransientModel):
     _name = "mediod.csv.wizard"
 
@@ -36,6 +39,7 @@ class WizardGetFile(models.TransientModel):
 
         df = pd.read_csv(file_name, error_bad_lines=False)
         i = 0
+
         for date, row in df.T.items():
             print("#####################################################################################")
             print(i)
@@ -260,18 +264,24 @@ class WizardGetFile(models.TransientModel):
         """
         product_dict = {}
         name = row["Name"]
-        list_id = row["ListId"]
-        # list_id = row["ï»¿ListId"]
+        if not isinstance(name, str):
+         if math.isnan(name):
+            name = None
+        list_id = row["ï»¿ListId"] if "ï»¿ListId" in row else row["ListId"]
+        purchase_cost = row ['PurchaseCost']
+        if math.isnan(purchase_cost):
+            purchase_cost = None
         description_sale = row['SalesDesc']
         description_purchase = row['PurchaseDesc']
         sale_price = row['SalesPrice']
+        if math.isnan(sale_price):
+            sale_price =None
         is_active = row['IsActive']
         manufacturer_part_number = row['ManufacturerPartNumber']
         bar_code = None
         bar_code = row['BarCodeValue']
-        if math.isnan(bar_code):
-            # self.env['product.template'].sudo().create(bar_code = '_')
-            bar_code = None
+        if not isinstance(bar_code, str):
+             bar_code = None
         uom_id = None
         uom_id = row['UnitOfMeasureSetRefFullName']
         if not isinstance(uom_id, str):
@@ -316,12 +326,17 @@ class WizardGetFile(models.TransientModel):
             "manufacturer_part_number": manufacturer_part_number,
             "uom_id": odoo_uom,
             "barcode": bar_code,
+            "standard_price": purchase_cost,
         }
-        is_existing_product = request.env['product.template'].search([('name', '=', row["Name"])])
-        if is_existing_product:
-            is_existing_product.write(product_dict)
+        if name is not None:
+            is_existing_product = request.env['product.template'].search([('name', '=', row["Name"])])
+            if not is_existing_product:
+                self.env['product.template'].sudo().create(product_dict)
+            else:
+                is_existing_product.write(product_dict)
         else:
-            self.env['product.template'].sudo().create(product_dict)
+            pass
+
 
     def import_quickbooks_listprice_data(self, row):
         """
@@ -345,7 +360,7 @@ class WizardGetFile(models.TransientModel):
             pricelist_id = self.env['product.pricelist'].create({'name': 'P9'})
         else:
             product_list = {}
-            list_id = row['ListID']
+            list_id = row["ï»¿ListID"] if "ï»¿ListID" in row else row["ListID"]
             item_name = row['ItemRefFullName']
             discount_price = row["CustomPrice"]
             standard_test_price = row["Name"]
@@ -504,6 +519,7 @@ class WizardGetFile(models.TransientModel):
         name = row['CustomerRefFullName']
         customer_dict = {
         "name": name,
+        "company_type":'company',
         }
         partner_name = self.env['res.partner'].search([('name', '=', name)])
         if partner_name:
@@ -526,9 +542,11 @@ class WizardGetFile(models.TransientModel):
 
         invoice_dict = {}
         partner_id = partner_name.id
+        list_id = row['TxnID']
         ein = row ['EIN']
-        if math.isnan(ein):
-            ein = None
+        if not isinstance(ein, str):
+            if math.isnan(ein):
+                ein = None
         groupdesc = row ['GroupDesc']
         if not isinstance(groupdesc, str):
          if math.isnan(groupdesc):
@@ -546,20 +564,33 @@ class WizardGetFile(models.TransientModel):
         if not isinstance(servicedate, str):
          if math.isnan(servicedate):
             servicedate = None
+        journal_id = self.env['account.journal'].search([('type', '=', 'sale')], limit=1)
+        if not journal_id:
+            journal_id = self.env['account.journal'].search([('type', '=', 'purchase')], limit=1)
+
         invoice_dict = {
             "ein": ein,
             "groupdesc": groupdesc,
+            "customer_list_id": list_id,
             "groupquantity": groupquantity,
             "serialnumber": serialnumber,
             "lotnumber": lotnumber,
             "servicedate": servicedate,
             "partner_id": partner_id,
+            "journal_id": journal_id.id,
             "move_type" : 'out_invoice',
         }
-        invoice_name = self.env['account.move'].search([('partner_id', '=', partner_id)])
-        if not invoice_name:
+        invoice_name = self.env['account.move'].search([('customer_list_id', '=', list_id)])
+        # for a in partner_name:
+        #     if a.partner_name == customer:
+        #         invoice_name.write(invoice_dict)
+        #     else:
+        #         invoice_name = self.env['account.move'].create(invoice_dict)
+        #         invoice_id = invoice_name.id
+        if not invoice_name.id:
             invoice_name = self.env['account.move'].create(invoice_dict)
         else:
+            del invoice_dict["journal_id"]
             invoice_name.write(invoice_dict)
         if product_name:
             self.env['account.move'].search([('partner_id', '=', partner_id)])
@@ -606,13 +637,17 @@ class WizardGetFile(models.TransientModel):
             except Exception as e:
                 print(e)
         if Create_product_name is not None:
-            invoice_name.invoice_line_ids = [(0, 0, {"product_id": product_name.id,
+            if invoice_name.id:
+                # for a in invoice_name:
+                #     if a.state == 'draft':
+                        invoice_name.invoice_line_ids = [(0, 0, {"product_id": product_name.id,
                                                  "quantity": quantity,
                                                  "name": label_name,
                                                  "account_id": 38,
                                                  "grouptxnlineid": GroupTxnLineID,
                                                  "product_uom_id": odoo_uom,
                                                  "price_unit": list_price})]
+
         else:
             pass
 
