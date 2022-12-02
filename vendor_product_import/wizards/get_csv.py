@@ -528,7 +528,7 @@ class WizardGetFile(models.TransientModel):
         if not partner_name:
             self.env['res.partner'].sudo().create(customer_dict)
         else:
-            parter_name = partner_name[0]
+            partner_name = partner_name[0]
         product_dict = {}
         Create_product_name = row['GroupLineItemFullName'] if self.check_is_nan(row['GroupLineItemFullName']) is False else None
         list_price = float(row['GroupLineRate'])
