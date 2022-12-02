@@ -518,15 +518,17 @@ class WizardGetFile(models.TransientModel):
     def import_quickbooks_invoice_data(self, row):
         customer_dict = {}
         name = row['CustomerRefFullName']
+        customer_list_id =row['TxnID']
         customer_dict = {
         "name": name,
+        "customer_list_id":customer_list_id,
         "company_type":'company',
         }
         partner_name = self.env['res.partner'].search([('name', '=', name)])
-        if partner_name:
-            self.env['res.partner'].write(customer_dict)
-        else:
+        if not partner_name:
             self.env['res.partner'].sudo().create(customer_dict)
+        else:
+            parter_name = partner_name[0]
         product_dict = {}
         Create_product_name = row['GroupLineItemFullName'] if self.check_is_nan(row['GroupLineItemFullName']) is False else None
         list_price = float(row['GroupLineRate'])
@@ -544,7 +546,7 @@ class WizardGetFile(models.TransientModel):
             product_name = product_name[0]
 
         invoice_dict = {}
-        partner_id = partner_name.id
+        partner_id = partner_name[0].id
         list_id = row['TxnID']
         ein = row ['EIN']
         if not isinstance(ein, str):
@@ -573,8 +575,8 @@ class WizardGetFile(models.TransientModel):
         journal_id = self.env['account.journal'].search([('type', '=', 'sale')], limit=1)
         if not journal_id:
             journal_id = self.env['account.journal'].search([('type', '=', 'purchase')], limit=1)
-
         invoice_dict = {
+            "partner_id": partner_id,
             "ein": ein,
             "groupdesc": groupdesc,
             "customer_list_id": list_id,
@@ -582,7 +584,6 @@ class WizardGetFile(models.TransientModel):
             "serialnumber": serialnumber,
             "lotnumber": lotnumber,
             "servicedate": servicedate,
-            "partner_id": partner_id,
             "journal_id": journal_id.id,
             "move_type" : 'out_invoice',
         }

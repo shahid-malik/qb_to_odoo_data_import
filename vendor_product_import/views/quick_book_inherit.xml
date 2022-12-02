@@ -14,7 +14,6 @@
             <xpath expr="//field[@name='website']" position="before">
                 <field name="fax"/>
             </xpath>
-
             <xpath expr="//div[hasclass('oe_title')]" position="inside">
                 <group col="3">
                     <field name="first_name" placeholder="First Name"/>
@@ -22,7 +21,6 @@
                     <field name="last_name" placeholder="Last Name"/>
                 </group>
             </xpath>
-
         </field>
     </record>
 </odoo>
