@@ -523,12 +523,13 @@ class WizardGetFile(models.TransientModel):
         "name": name,
         "customer_list_id":customer_list_id,
         "company_type":'company',
+            "vat":1,
         }
         partner_name = self.env['res.partner'].search([('name', '=', name)])
         if not partner_name:
-            self.env['res.partner'].sudo().create(customer_dict)
+            partner_name= self.env['res.partner'].sudo().create(customer_dict)
         else:
-            partner_name = partner_name[0]
+            partner_name.write(customer_dict)
         product_dict = {}
         Create_product_name = row['GroupLineItemFullName'] if self.check_is_nan(row['GroupLineItemFullName']) is False else None
         list_price = float(row['GroupLineRate'])
@@ -645,20 +646,18 @@ class WizardGetFile(models.TransientModel):
                 print(e)
         if Create_product_name is not None:
             if invoice_name.id:
-                for a in invoice_name:
-                    if a.state == 'draft':
-                            invoice_name.invoice_line_ids = [(0, 0, {"product_id": product_name.id,
+                invoice_name.invoice_line_ids = [(0, 0, {"product_id": product_name.id,
                                                      "quantity": quantity,
                                                      "name": label_name,
-                                                     "account_id": 38,
+                                                     "account_id": invoice_name.id,
                                                      "grouptxnlineid": GroupTxnLineID,
                                                      "product_uom_id": odoo_uom,
                                                      "price_unit": list_price})]
+            else:
+                pass
         else:
             pass
-
-
-        def check_is_nan(self, val):
+    def check_is_nan(self, val):
             try:
              math.isnan(val)
              return True
