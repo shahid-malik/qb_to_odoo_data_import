@@ -649,7 +649,7 @@ class WizardGetFile(models.TransientModel):
                 invoice_name.invoice_line_ids = [(0, 0, {"product_id": product_name.id,
                                                      "quantity": quantity,
                                                      "name": label_name,
-                                                     "account_id": invoice_name.id,
+                                                     "account_id":1,
                                                      "grouptxnlineid": GroupTxnLineID,
                                                      "product_uom_id": odoo_uom,
                                                      "price_unit": list_price})]
